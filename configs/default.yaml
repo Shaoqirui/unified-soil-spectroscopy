@@ -1,0 +1,123 @@
+seed: 34
+seeds: [34, 1234, 5219]
+
+logging:
+  level: INFO
+
+artifacts:
+  dir: artifacts
+
+data:
+  root: data_unzip
+  unzip_dir: data_unzip
+  sg_window: 11
+  sg_poly: 2
+  sg_deriv: 1
+  libs_band: [200.0, 540.0]
+  libs_ranges:
+    Clay: [[220.84, 222.21], [246.77, 248.29], [251.37, 252.94]]
+    OM: [[295.08, 296.92]]
+    CEC: [[201.31, 272.37], [287.89, 298.73], [414.15, 416.63]]
+    pH: [[220.84, 222.21], [237.82, 239.27], [391.78, 394.22]]
+    V: [[201.31, 272.37], [279.18, 300.60], [396.59, 399.10]]
+    exP: [[214.14, 215.44]]
+    exK: [[375.28, 377.53]]
+    exCa: [[389.37, 391.77]]
+    exMg: [[284.36, 286.14]]
+  train_ratio: 0.7
+  split_seed: 34
+
+teacher:
+  Clay:
+    method: V+X+L-SF-PLS
+    VXL_SF: {scaler: std, ncomp: 4}
+  OM:
+    method: V+X+L-SF-PLS
+    VXL_SF: {scaler: std, ncomp: 3}
+  CEC:
+    method: VNIR+LIBS-GR
+    V_PLS: {scaler: auto, ncomp: 9}
+    L_PLS: {scaler: auto, ncomp: 9}
+    VL_SF: {scaler: std, ncomp: 5}
+  pH:
+    method: VNIR-PLS
+    V_PLS: {scaler: auto, ncomp: 7}
+  V:
+    method: VNIR+XRF-SF-PLS
+    VX_SF: {scaler: auto, ncomp: 7}
+  exP:
+    method: VNIR+LIBS-GR
+    V_PLS: {scaler: auto, ncomp: 9}
+    L_PLS: {scaler: auto, ncomp: 7}
+    VL_SF: {scaler: std, ncomp: 5}
+  exK:
+    method: VNIR+XRF-SF-PLS
+    VX_SF: {scaler: auto, ncomp: 9}
+  exCa:
+    method: LIBS-PLS
+    L_PLS: {scaler: auto, ncomp: 7}
+  exMg:
+    method: LIBS-PLS
+    L_PLS: {scaler: auto, ncomp: 13}
+
+student:
+  branches:
+    V:
+      size: m
+      separable: true
+      cap: 224
+      norm: bn
+      gem_p: 3.5
+      gem_mix: 0.4
+      enable_peak: false
+      peak_kset: [7, 11, 15]
+    X:
+      size: m
+      separable: false
+      cap: 192
+      norm: bn
+      gem_p: 3.5
+      gem_mix: 0.6
+      enable_peak: false
+      peak_kset: [7, 11, 15]
+    L:
+      size: s
+      separable: false
+      cap: 224
+      norm: gn
+      gem_p: 3.5
+      gem_mix: 0.5
+      enable_peak: false
+      peak_kset: [7, 11, 15]
+  prior:
+    Clay: [0.34, 0.33, 0.33]
+    OM: [0.34, 0.33, 0.33]
+    CEC: [0.45, 0.10, 0.45]
+    pH: [0.90, 0.05, 0.05]
+    V: [0.45, 0.50, 0.05]
+    exP: [0.45, 0.10, 0.45]
+    exK: [0.45, 0.50, 0.05]
+    exCa: [0.05, 0.05, 0.90]
+    exMg: [0.05, 0.05, 0.90]
+  moe:
+    hidden: 128
+    act: relu
+    tau: 1.0
+
+training:
+  batch: 24
+  lr: 0.001
+  wd: 0.0005
+  epochs: 160
+  patience: 25
+  mix_alpha_start: 0.4
+  mix_alpha_end: 0.15
+  mix_turn: 0.6
+  out_kd_w: 1.0
+  feat_kd_w: 0.10
+  gt_w: 0.15
+  clip: 0.5
+  num_workers: 0
+
+evaluation:
+  metrics: [R2, RMSE]
