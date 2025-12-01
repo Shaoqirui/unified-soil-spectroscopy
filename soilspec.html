@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>owlspace · Unified Soil Spectroscopy</title>
+  <meta name="description" content="Unifying chemometrics for robust soil spectroscopy with multimodal teacher–student distillation." />
+
+  <!-- Font Awesome for subtle icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    /* --- Light theme as default (high contrast) --- */
+    :root{
+      --bg: #f4f5fb;
+      --bg-gradient:
+        radial-gradient(circle at 0% 0%, #ffffff 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, #fef6ed 0, transparent 55%),
+        #f4f5fb;
+
+      --card: #ffffff;
+      --card-soft: #ffffff;
+
+      --text: #111827;
+      --muted: #6b7280;
+      --brand: #facc15;        /* owl eyes */
+      --accent: #0ea5e9;       /* cyan */
+      --accent-strong: #f97316;/* soil project accent (orange) */
+
+      --border: #e5e7eb;
+      --border-soft: #e5e7eb;
+      --chip: #eef2ff;
+
+      --shadow: 0 18px 40px rgba(15,23,42,.10), 0 2px 8px rgba(15,23,42,.06);
+    }
+
+    /* --- Dark mode override --- */
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg: #05060a;
+        --bg-gradient:
+          radial-gradient(circle at 0% 0%, #1a1b2b 0, transparent 55%),
+          radial-gradient(circle at 100% 100%, #22191f 0, transparent 50%),
+          #05060a;
+
+        --card: #10111a;
+        --card-soft: #151726;
+
+        --text: #e5e7f3;
+        --muted: #9ca3af;
+        --brand: #ffd166;
+        --accent: #7cc6fe;
+        --accent-strong: #ff9b4a;
+
+        --border: #262837;
+        --border-soft: #202234;
+        --chip: #181926;
+
+        --shadow: 0 18px 40px rgba(0,0,0,.55), 0 2px 10px rgba(0,0,0,.4);
+      }
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+  body{
+    margin:0;
+    overflow-x:hidden;
+    background: var(--bg-gradient);
+    color:var(--text);
+      font: 16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:16px 20px 40px;
+    }
+
+    /* ---------- OWLSPACE BADGE OVER HERO (TOP, GLASS) ---------- */
+    .site-header{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      z-index:3;
+      display:flex;
+      justify-content:flex-start;
+      pointer-events:none;
+      padding:12px 20px 0;
+    }
+
+  .site-logo{
+    pointer-events:auto;
+    display:inline-flex;
+      align-items:center;
+      gap:8px;
+      text-decoration:none;
+      color:#e5e7eb;
+      padding:6px 12px;
+      border-radius:999px;
+      background:rgba(15,23,42,0.7);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(148,163,184,0.6);
+      box-shadow:0 10px 28px rgba(0,0,0,0.55);
+  }
+  .mini-owl-badge{
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    z-index:6;
+    pointer-events:auto;
+  }
+  .mini-owl-badge .site-logo{
+    background:rgba(15,23,42,0.72);
+  }
+
+    .owl-o{
+      display:inline-block;
+      width:1.8em;
+      height:1.8em;
+      position:relative;
+      top:0;
+      margin:0;
+      filter: drop-shadow(0 4px 10px rgba(15,23,42,.35));
+    }
+
+    #owl3d{
+      width:100%;
+      aspect-ratio:1/1;
+      height:auto;
+      display:block;
+    }
+
+    .site-logo-text{
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:lowercase;
+      font-size:0.98rem;
+    }
+
+    @media (max-width: 640px){
+      .site-header{
+        justify-content:center;
+        padding-top:10px;
+      }
+      .site-logo{
+        padding:5px 10px;
+      }
+      .owl-o{
+        width:1.6em;
+        height:1.6em;
+      }
+    }
+
+    /* ---------- DISTILLATION HERO (top banner) ---------- */
+
+    .hero-container {
+      position: relative;
+      width: 100%;
+      height: 360px;
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(14,165,233,0.16) 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(249,115,22,0.14) 0, transparent 55%),
+        radial-gradient(circle at center, #020617 0%, #020617 100%);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    #distillation-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      opacity: 0.9;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: white;
+      max-width: 900px;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(9px);
+      -webkit-backdrop-filter: blur(9px);
+      padding: 22px 26px 24px;
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,0.45);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+    }
+
+    .hero-title {
+      font-size: clamp(1.95rem, 3vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0 0 6px 0;
+      background: linear-gradient(90deg, var(--accent), #ffffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.02rem;
+      color: #cbd5e1;
+      margin-bottom: 14px;
+      font-weight: 300;
+    }
+
+    .hero-subtitle strong{
+      color:#e5e7eb;
+      font-weight:600;
+    }
+
+    .hero-meta {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      display: flex;
+      flex-wrap:wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .meta-item { display: flex; align-items: center; gap: 5px; }
+    .highlight { color: #facc15; font-weight: 600; }
+
+    @media (max-width: 640px){
+      .hero-container{
+        height:320px;
+        align-items:flex-end;
+        padding-bottom:14px;
+      }
+      .hero-content{
+        padding:16px 16px 18px;
+        border-radius:14px;
+      }
+      .hero-title{
+        font-size:1.7rem;
+      }
+      .hero-subtitle{
+        font-size:0.94rem;
+      }
+      .hero-meta{
+        font-size:0.82rem;
+        gap:7px;
+      }
+    }
+
+    /* ---------- PROJECT LAYOUT ---------- */
+    .project-container{
+      max-width:900px;
+      margin:0 auto;
+      position:relative;
+    }
+
+    .project-shell{
+      position:relative;
+      padding:26px 22px 26px;
+      border-radius:30px;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(14,165,233,0.10) 0, transparent 60%),
+        radial-gradient(circle at 100% 0%, rgba(249,115,22,0.09) 0, transparent 55%),
+        var(--card-soft);
+      border:1px solid var(--border-soft);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      animation: shellIn .6s ease-out;
+    }
+
+    .project-shell::before{
+      content:"";
+      position:absolute;
+      width:220px;
+      height:220px;
+      background:conic-gradient(from 190deg, rgba(255,255,255,0.65), transparent 40%, rgba(14,165,233,0.55), rgba(249,115,22,0.55), transparent 80%, rgba(255,255,255,0.35));
+      top:-120px;
+      right:-120px;
+      opacity:0.4;
+      filter: blur(14px);
+      pointer-events:none;
+    }
+
+    @keyframes shellIn{
+      from{
+        opacity:0;
+        transform:translateY(18px) scale(.98);
+      }
+      to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+      }
+    }
+
+    .project-header{
+      margin-bottom:18px;
+    }
+    .project-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(15,23,42,.03);
+      border:1px solid rgba(148,163,184,.5);
+      color:var(--muted);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:8px;
+    }
+    .project-kicker i{
+      font-size:.8rem;
+      color:var(--accent-strong);
+    }
+
+    .project-title{
+      font-size:clamp(1.9rem, 3vw, 2.4rem);
+      margin:0;
+      letter-spacing:.01em;
+      line-height:1.3;
+    }
+    .project-title span.highlight{
+      background:linear-gradient(110deg, var(--accent-strong), #facc15);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .project-subtitle{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:.96rem;
+    }
+
+    .project-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+    .meta-pill{
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.5);
+      color:var(--muted);
+      font-size:.78rem;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(255,255,255,.7);
+    }
+    @media (prefers-color-scheme: dark){
+      .meta-pill{
+        background:rgba(15,23,42,.7);
+      }
+    }
+    .meta-pill i{
+      font-size:.75rem;
+      color:var(--accent-strong);
+    }
+
+    /* ---------- SECTIONS ---------- */
+    .project-body{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      margin-top:18px;
+    }
+
+    .project-section{
+      position:relative;
+      padding:18px 18px 18px 18px;
+      border-radius:20px;
+      border:1px solid #e5e7eb;
+      background: #f9fafb;
+      box-shadow:0 8px 18px rgba(148,163,184,.18);
+      opacity:0;
+      transform:translateY(12px);
+      transition:
+        opacity .45s ease-out,
+        transform .45s ease-out,
+        box-shadow .25s ease-out,
+        border-color .25s ease-out,
+        background .25s ease-out;
+    }
+    @media (prefers-color-scheme: dark){
+      .project-section{
+        border-color:rgba(255,255,255,.05);
+        background:rgba(8,10,20,.95);
+        box-shadow:0 8px 18px rgba(0,0,0,.55);
+      }
+    }
+    .project-section.is-visible{
+      opacity:1;
+      transform:translateY(0);
+    }
+    .project-section:hover{
+      box-shadow:0 16px 26px rgba(148,163,184,.25);
+      border-color:#d1d5db;
+      background:#ffffff;
+    }
+    @media (prefers-color-scheme: dark){
+      .project-section:hover{
+        box-shadow:0 16px 26px rgba(0,0,0,.7);
+        border-color:rgba(255,255,255,.18);
+        background:rgba(10,12,24,.98);
+      }
+    }
+
+    .section-heading{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:0 0 6px;
+    }
+    .section-heading-icon{
+      width:30px;
+      height:30px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 30% 0, rgba(255,255,255,.7), transparent 50%),
+        linear-gradient(135deg, var(--accent-strong), #fed7aa);
+      color:#1b120c;
+      box-shadow:0 4px 10px rgba(148,163,184,.7);
+      flex-shrink:0;
+    }
+    .section-heading-title{
+      font-size:1.05rem;
+      font-weight:600;
+    }
+
+    .project-section p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .project-section ul{
+      margin:8px 0 0;
+      padding-left:20px;
+      color:var(--muted);
+      font-size:.95rem;
+      list-style: none;
+    }
+    .project-section ul li{
+      position:relative;
+      margin-bottom:6px;
+      padding-left:14px;
+    }
+    .project-section ul li::before{
+      content:"";
+      position:absolute;
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--accent-strong),#facc15);
+      left:0;
+      top:0.55em;
+      transform:translateY(-50%);
+    }
+
+    /* Download block */
+    .download-row{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:10px;
+    }
+    .download-text{
+      color:var(--muted);
+      font-size:.9rem;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 16px;
+      border-radius:999px;
+      border:1px solid transparent;
+      background:linear-gradient(135deg, var(--accent-strong), #facc15);
+      color:#1f2933;
+      font-weight:600;
+      text-decoration:none;
+      font-size:.9rem;
+      box-shadow:0 10px 18px rgba(148,163,184,.55);
+      transform:translateY(0);
+      transition:
+        transform .16s ease-out,
+        box-shadow .18s ease-out,
+        filter .18s.ease-out,
+        border-color .18s ease-out;
+    }
+    @media (prefers-color-scheme: dark){
+      .btn{
+        color:#1b120c;
+        box-shadow:0 10px 18px rgba(0,0,0,.7);
+      }
+    }
+    .btn i{
+      font-size:.95rem;
+    }
+    .btn:hover{
+      transform:translateY(-1px);
+      box-shadow:0 16px 26px rgba(148,163,184,.7);
+      filter:brightness(1.03);
+      border-color:rgba(148,163,184,.6);
+    }
+    @media (prefers-color-scheme: dark){
+      .btn:hover{
+        box-shadow:0 16px 26px rgba(0,0,0,.85);
+        border-color:rgba(0,0,0,.4);
+      }
+    }
+    .btn:active{
+      transform:translateY(0);
+      box-shadow:0 8px 16px rgba(148,163,184,.55);
+      filter:brightness(.98);
+    }
+
+    footer{
+      margin:32px 0 10px;
+      padding-top:16px;
+      border-top:1px solid var(--border);
+      color:var(--muted);
+      font-size:.9rem;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap
+    }
+
+    @media (max-width: 720px){
+      .project-shell{
+        padding:20px 16px 22px;
+        border-radius:24px;
+      }
+      .project-section{
+        padding:14px 14px 16px;
+      }
+      .download-row{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+    }
+
+    /* tiny SVG owl animations (kept placeholder classes) */
+    .blink circle.eye{animation: blink 5s infinite ease-in-out}
+    @keyframes blink{0%, 2%, 60%, 100%{ transform: scaleY(1)} 1%{ transform: scaleY(0.1)} }
+    .bob{animation: bob 6s ease-in-out infinite}
+    @keyframes bob{0%,100%{ transform: translateY(0)} 50%{ transform: translateY(-4px) }}
+
+    /* ---------- Interactive Teacher–Student Pipeline (simplified text) ---------- */
+
+    .ts-wrapper{
+      display:grid;
+      grid-template-columns: minmax(260px, 430px) minmax(300px, 1fr);
+      gap:18px;
+      margin-top:8px;
+    }
+    @media (max-width: 880px){
+      .ts-wrapper{
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ts-flow-chart{
+      position:relative;
+      padding:14px 14px 16px;
+      border-radius:18px;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(14,165,233,0.08), transparent 60%),
+        linear-gradient(145deg, rgba(255,255,255,0.98), rgba(248,250,252,0.98));
+      box-shadow:0 14px 32px rgba(15,23,42,0.16),
+                 0 0 0 1px rgba(148,163,184,0.25);
+      border:1px solid var(--border);
+      max-height:560px;
+      overflow-y:auto;
+    }
+    @media (prefers-color-scheme: dark){
+      .ts-flow-chart{
+        background:
+          radial-gradient(circle at 0% 0%, rgba(56,189,248,0.10), transparent 60%),
+          linear-gradient(145deg, #050814, #0b1020);
+        box-shadow:0 14px 32px rgba(0,0,0,0.65),
+                   0 0 0 1px rgba(15,23,42,0.8);
+        border-color:var(--border-soft);
+      }
+    }
+
+    .ts-lane-label{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:0.17em;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .ts-lane-separator{
+      margin:10px 0;
+      border-top:1px dashed rgba(148,163,184,0.6);
+    }
+
+    .ts-node-column{
+      position:relative;
+      padding-left:22px;
+    }
+    .ts-node-column::before{
+      content:"";
+      position:absolute;
+      left:10px;
+      top:8px;
+      bottom:8px;
+      border-left:2px dashed rgba(14,165,233,0.45);
+    }
+
+    .ts-flow-node{
+      position:relative;
+      margin:4px 0;
+      padding:7px 9px;
+      border-radius:11px;
+      border:1px solid #d7e2f3;
+      background:linear-gradient(135deg,#ffffff,#f3f6fb);
+      cursor:pointer;
+      transition:all 0.18s ease;
+    }
+    @media (prefers-color-scheme: dark){
+      .ts-flow-node{
+        border-color:rgba(148,163,184,0.4);
+        background:linear-gradient(135deg,#020617,#020617);
+      }
+    }
+    .ts-flow-node::before{
+      content:"";
+      position:absolute;
+      left:-14px;
+      top:50%;
+      transform:translateY(-50%);
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      border:2px solid #cbd2e1;
+      background:#ffffff;
+    }
+    .ts-flow-node.active{
+      border-color:#0ea5e9;
+      box-shadow:0 8px 22px rgba(14,165,233,0.35);
+      transform:translateY(-1px);
+    }
+    .ts-flow-node.active::before{
+      border-color:#0ea5e9;
+      background:#0ea5e9;
+    }
+
+    .ts-node-header{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:6px;
+    }
+    .ts-node-title{
+      font-size:12px;
+      font-weight:600;
+      color:var(--text);
+    }
+    .ts-node-tag{
+      font-size:9px;
+      padding:1px 6px;
+      border-radius:999px;
+      background:var(--chip);
+      color:var(--accent-strong);
+      letter-spacing:0.11em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .ts-node-subtitle{
+      margin-top:3px;
+      font-size:10px;
+      color:var(--muted);
+    }
+    .ts-node-pills{
+      margin-top:4px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+    }
+    .ts-pill{
+      font-size:10px;
+      padding:2px 6px;
+      border-radius:999px;
+      background:#f5f7fb;
+      border:1px solid #dde4f3;
+      color:#3b4f66;
+    }
+    .ts-pill.hl{
+      background:rgba(14,165,233,0.08);
+      border-color:#0ea5e9;
+      color:#075985;
+    }
+    @media (prefers-color-scheme: dark){
+      .ts-pill{
+        background:#020617;
+        border-color:#1f2937;
+        color:#e5e7eb;
+      }
+      .ts-pill.hl{
+        background:rgba(56,189,248,0.25);
+        border-color:#38bdf8;
+        color:#e0f2fe;
+      }
+    }
+
+    .ts-details{
+      position:relative;
+      padding:18px 20px 20px;
+      border-radius:20px;
+      background:
+        radial-gradient(circle at top left,rgba(14,165,233,0.16) 0,transparent 45%),
+        var(--card);
+      box-shadow:0 18px 40px rgba(15,23,42,0.18),
+                 0 0 0 1px rgba(148,163,184,0.32);
+      border:1px solid var(--border-soft);
+    }
+    @media (prefers-color-scheme: dark){
+      .ts-details{
+        background:
+          radial-gradient(circle at top left,rgba(56,189,248,0.20) 0,transparent 45%),
+          #050814;
+        box-shadow:0 18px 40px rgba(0,0,0,0.75),
+                   0 0 0 1px rgba(15,23,42,0.8);
+        border-color:var(--border-soft);
+      }
+    }
+
+    .ts-details-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:12px;
+      margin-bottom:6px;
+    }
+    .ts-details-title{
+      font-size:18px;
+      font-weight:600;
+      color:var(--text);
+    }
+    .ts-details-tagline{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .ts-details-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      margin-bottom:8px;
+      font-size:11px;
+    }
+    .ts-details-meta-pill{
+      padding:3px 8px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.9);
+      border:1px solid #d2deef;
+      color:#334e68;
+    }
+    @media (prefers-color-scheme: dark){
+      .ts-details-meta-pill{
+        background:rgba(15,23,42,0.9);
+        border-color:#1f2937;
+        color:#e5e7f3;
+      }
+    }
+
+    .ts-details-text{
+      font-size:13px;
+      line-height:1.6;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .ts-details-list{
+      margin:4px 0 8px;
+      padding-left:16px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .ts-details-list li{ margin-bottom:3px; }
+
+    .ts-details-code{
+      font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background:#f0f4fb;
+      border-radius:6px;
+      padding:2px 5px;
+      font-size:11px;
+      color:#1f3b57;
+    }
+    @media (prefers-color-scheme: dark){
+      .ts-details-code{
+        background:#020617;
+        color:#e5e7eb;
+      }
+    }
+
+    .ts-details-metrics{
+      margin-top:8px;
+      padding-top:8px;
+      border-top:1px dashed rgba(148,163,184,0.7);
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      font-size:12px;
+    }
+    .ts-metric{ min-width:130px; }
+    .ts-metric-label{ font-size:11px; color:var(--muted); }
+    .ts-metric-value{ font-size:13px; font-weight:600; color:var(--text); }
+
+    .ts-details-note{
+      margin-top:6px;
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .ts-details-panel{ display:none; }
+    .ts-details-panel.active{ display:block; }
+  </style>
+</head>
+<body>
+
+  <!-- Distillation hero with owlspace badge at the very top -->
+  <div class="hero-container">
+    <header class="site-header">
+      <a href="/" class="site-logo" aria-label="Back to home">
+        <span class="owl-o"><canvas id="owl3d"></canvas></span>
+        <span class="site-logo-text">owlspace</span>
+      </a>
+    </header>
+
+    <canvas id="distillation-canvas"></canvas>
+    <div class="hero-content">
+      <h1 class="hero-title">Unifying Chemometrics for Robust Soil Spectroscopy</h1>
+      <div class="hero-subtitle">
+        Cross-Modal Multi-Task Learning for Soil Property Estimation Based on <strong>Teacher-Student Distillation</strong> from Vis-NIR, XRF, and LIBS Under Small-Sample Conditions.
+      </div>
+      <div class="hero-meta">
+        <div class="meta-item"><span>Qirui Shao et al.</span></div>
+        <div class="meta-item">•</div>
+        <div class="meta-item"><span>Nanjing Normal University</span></div>
+        <div class="meta-item">•</div>
+        <div class="meta-item"><span class="highlight">Macro R² ≈ 0.81</span> <span>student performance</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Hidden SVG template (optional) -->
+    <svg id="owl-svg-template" viewBox="0 0 128 128" aria-hidden="true" style="display:none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="g1" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".9"/>
+          <stop offset="100%" stop-color="#dcdcdc" stop-opacity=".6"/>
+        </radialGradient>
+      </defs>
+      <circle cx="64" cy="64" r="60" fill="url(#g1)" opacity=".06"/>
+      <path d="M64 18c-22 0-36 13-36 30v22c0 22 16 40 36 40s36-18 36-40V48c0-17-14-30-36-30Z" fill="#3a3d4a"/>
+      <path d="M64 22c-18 0-30 10-30 24v22c0 18 14 32 30 32s30-14 30-32V46C94 32 82 22 64 22Z" fill="#4a4e61"/>
+      <path d="M32 52c8-12 20-16 32-16s24 4 32 16c-10 8-20 12-32 12S42 60 32 52Z" fill="#f5f6f9"/>
+      <g transform="translate(0,2)">
+        <circle cx="48" cy="60" r="12" fill="#ffd166"/>
+        <circle cx="48" cy="60" r="6" fill="#1a1b22"/>
+        <circle cx="80" cy="60" r="12" fill="#ffd166"/>
+        <circle cx="80" cy="60" r="6" fill="#1a1b22"/>
+      </g>
+      <path d="M64 66l8 10H56l8-10Z" fill="#ffb703"/>
+      <ellipse cx="64" cy="88" rx="20" ry="16" fill="#f0f1f5"/>
+      <g fill="#ffb703">
+        <rect x="52" y="108" width="6" height="4" rx="2"/>
+        <rect x="70" y="108" width="6" height="4" rx="2"/>
+      </g>
+    </svg>
+
+    <!-- Soil spectroscopy project content -->
+    <main class="project-container" aria-label="Soil spectroscopy research project">
+      <section class="project-shell">
+        <header class="project-header">
+          <div class="project-kicker">
+            <i class="fas fa-seedling" aria-hidden="true"></i>
+            <span>Soil Spectroscopy · Research Project</span>
+          </div>
+          <h2 class="project-title">
+            <span class="highlight">Unifying Chemometrics for Robust Soil Spectroscopy</span>
+          </h2>
+          <p class="project-subtitle">
+            Multi-task distillation approach for precision agriculture using VNIR, XRF, and LIBS.
+          </p>
+
+          <div class="project-meta" aria-label="Project meta information">
+            <span class="meta-pill"><i class="fas fa-layer-group" aria-hidden="true"></i>Multimodal VNIR / XRF / LIBS</span>
+            <span class="meta-pill"><i class="fas fa-brain" aria-hidden="true"></i>Teacher–student distillation</span>
+            <span class="meta-pill"><i class="fas fa-flask" aria-hidden="true"></i>Soil chemometrics</span>
+          </div>
+        </header>
+
+        <section class="project-body">
+          <!-- Key Objectives -->
+          <article class="project-section" aria-label="Key objectives">
+            <div class="section-heading">
+              <div class="section-heading-icon">
+                <i class="fas fa-bullseye" aria-hidden="true"></i>
+              </div>
+              <h3 class="section-heading-title">Key Objectives</h3>
+            </div>
+            <p>
+              The project aims to overcome traditional chemometric limitations by employing a unified multi-task learning
+              framework via teacher–student distillation. It consolidates soil property predictions using VNIR, XRF, and
+              LIBS spectral sources into a single, efficient model.
+            </p>
+          </article>
+
+          <!-- Problem Addressed -->
+          <article class="project-section" aria-label="Problem addressed">
+            <div class="section-heading">
+              <div class="section-heading-icon">
+                <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+              </div>
+              <h3 class="section-heading-title">Problem Addressed</h3>
+            </div>
+            <p>
+              Traditional methods struggled with limited generalization and required separate calibrations for each soil
+              attribute. Our work addresses these limitations by integrating multiple spectral data for a comprehensive
+              soil property prediction model.
+            </p>
+          </article>
+
+          <!-- Research Highlights -->
+          <article class="project-section" aria-label="Research highlights">
+            <div class="section-heading">
+              <div class="section-heading-icon">
+                <i class="fas fa-star" aria-hidden="true"></i>
+              </div>
+              <h3 class="section-heading-title">Research Highlights</h3>
+            </div>
+            <ul>
+              <li>Unified prediction of nine soil properties</li>
+              <li>Utilization of cross-validated chemometric pipelines</li>
+              <li>Integration of teacher–student distillation learning frameworks</li>
+              <li>Use of modality-specific CNN branches for assimilation</li>
+            </ul>
+          </article>
+
+
+          <!-- Interactive Teacher–Student Pipeline (simplified) -->
+          <article class="project-section" aria-label="Interactive teacher–student pipeline">
+            <div class="section-heading">
+              <div class="section-heading-icon">
+                <i class="fas fa-diagram-project" aria-hidden="true"></i>
+              </div>
+              <h3 class="section-heading-title">Interactive Teacher–Student Pipeline</h3>
+            </div>
+            <p>
+              Follow how soil and spectral data flow through teacher models and into a unified student network.
+              Hover or click steps on the left to see a brief description on the right.
+            </p>
+
+            <div class="ts-wrapper">
+              <!-- FLOW CHART ------------------------------------------------>
+              <div class="ts-flow-chart">
+                <div class="ts-lane-label">Data &amp; Teacher Side</div>
+                <div class="ts-node-column">
+                  <div class="ts-flow-node active" data-node="files">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Data discovery &amp; alignment</span>
+                      <span class="ts-node-tag">Step T1</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Locate soil and spectral tables, handle archives, and align sample IDs.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Soil + VNIR + XRF + LIBS</span>
+                      <span class="ts-pill">Consistent sample index</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="split-pre">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Targets &amp; train/validation split</span>
+                      <span class="ts-node-tag">Step T2</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Build the 9-target matrix and create a balanced train/validation partition.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">9 soil properties</span>
+                      <span class="ts-pill">≈ 70% / 30% split</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="spec-pre">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Spectral preprocessing</span>
+                      <span class="ts-node-tag">Step T3</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Normalize and smooth spectra with modality-specific chemometric recipes.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Noise reduction</span>
+                      <span class="ts-pill">Scale &amp; normalize per sensor</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="teachers">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Teacher models per task</span>
+                      <span class="ts-node-tag">Step T4</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Fit strong baseline models for each soil property using chosen modalities.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Chemometric baselines</span>
+                      <span class="ts-pill">Macro R² ≈ 0.77</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="single-modal">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Single-modality teachers</span>
+                      <span class="ts-node-tag">Step T5</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Build separate teachers for VNIR, XRF, and LIBS to guide each branch.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Per-modality targets</span>
+                      <span class="ts-pill">Richer supervision</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ts-lane-separator"></div>
+
+                <div class="ts-lane-label">Student Side &amp; Distillation</div>
+                <div class="ts-node-column">
+                  <div class="ts-flow-node" data-node="student-pre">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Standardized inputs</span>
+                      <span class="ts-node-tag">Step S1</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Bring all spectra and targets to a comparable scale for stable training.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Per-modality scaling</span>
+                      <span class="ts-pill">Shared target normalization</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="branches">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Spectral branches</span>
+                      <span class="ts-node-tag">Step S2</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Learn compact feature embeddings for VNIR, XRF, and LIBS separately.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Multi-scale 1D CNNs</span>
+                      <span class="ts-pill">256-D features per modality</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="gating-moe">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Cross-modal fusion</span>
+                      <span class="ts-node-tag">Step S3</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Combine modality features with a prior-informed gating and experts.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Task-wise fusion weights</span>
+                      <span class="ts-pill">Mixture-of-experts</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="heads">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Prediction heads</span>
+                      <span class="ts-node-tag">Step S4</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Map fused features to 9 soil properties and per-modality outputs.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Multi-task regression</span>
+                      <span class="ts-pill">Feature-level guidance</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="training">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Training &amp; distillation</span>
+                      <span class="ts-node-tag">Step S5</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Train the student with a mix of ground truth loss and teacher matching.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Multi-level KD losses</span>
+                      <span class="ts-pill">Regularized optimization</span>
+                    </div>
+                  </div>
+
+                  <div class="ts-flow-node" data-node="eval">
+                    <div class="ts-node-header">
+                      <span class="ts-node-title">Evaluation &amp; robustness</span>
+                      <span class="ts-node-tag">Step S6</span>
+                    </div>
+                    <div class="ts-node-subtitle">
+                      Repeat training across seeds and report macro statistics.
+                    </div>
+                    <div class="ts-node-pills">
+                      <span class="ts-pill hl">Multiple seeds</span>
+                      <span class="ts-pill">Macro R² ≈ 0.81 ± 0.03</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DETAILS PANEL ---------------------------------------------->
+              <div class="ts-details">
+                <!-- T1 -->
+                <div class="ts-details-panel active" data-node-details="files">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Data Discovery & Alignment</div>
+                    <div class="ts-details-tagline">Bring all raw files into a single, clean starting point.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Soil + three spectral sensors</span>
+                    <span class="ts-details-meta-pill">Automatic archive handling</span>
+                  </div>
+                  <p class="ts-details-text">
+                    The pipeline first searches for the soil property table and the three spectral matrices
+                    (VNIR, XRF, LIBS), unpacks archives if needed, and aligns everything by sample ID.
+                    Downstream models see a single, consistent set of synchronized inputs.
+                  </p>
+                  <div class="ts-details-note">
+                    All filesystem quirks are handled here so the learning code can focus purely on modeling.
+                  </div>
+                </div>
+
+                <!-- T2 -->
+                <div class="ts-details-panel" data-node-details="split-pre">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Targets & Train/Validation Split</div>
+                    <div class="ts-details-tagline">A balanced partition in the space of soil properties.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Nine regression targets</span>
+                    <span class="ts-details-meta-pill">≈ 70% train / 30% validation</span>
+                  </div>
+                  <p class="ts-details-text">
+                    The nine soil attributes are stacked into a target matrix, then split into train and
+                    validation sets to cover the diversity of samples as evenly as possible. This ensures
+                    that both teacher and student are evaluated on a realistic and challenging hold-out.
+                  </p>
+                  <div class="ts-details-note">
+                    The same partition is reused throughout the project for strict comparability.
+                  </div>
+                </div>
+
+                <!-- T3 -->
+                <div class="ts-details-panel" data-node-details="spec-pre">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Spectral Preprocessing</div>
+                    <div class="ts-details-tagline">Chemometric-style conditioning for each sensor.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Per-modality recipes</span>
+                    <span class="ts-details-meta-pill">Noise and scale control</span>
+                  </div>
+                  <p class="ts-details-text">
+                    VNIR, XRF, and LIBS each receive a tailored preprocessing pipeline combining
+                    normalization, scaling, and basic smoothing or windowing. These steps reflect
+                    standard chemometrics practice and make the spectra more comparable and stable to model.
+                  </p>
+                  <div class="ts-details-note">
+                    The student and the teachers share these preprocessed inputs to keep comparisons fair.
+                  </div>
+                </div>
+
+                <!-- T4 -->
+                <div class="ts-details-panel" data-node-details="teachers">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Teacher Models per Task</div>
+                    <div class="ts-details-tagline">Curated baselines that define the performance target.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">One teacher per soil property</span>
+                    <span class="ts-details-meta-pill">Best modality choice per task</span>
+                  </div>
+                  <p class="ts-details-text">
+                    For each of the nine targets, a dedicated teacher model is trained using a chosen subset
+                    of modalities. Together they form a strong baseline ensemble that reaches a macro
+                    coefficient of determination of about 0.77 on the validation set.
+                  </p>
+                  <div class="ts-details-metrics">
+                    <div class="ts-metric">
+                      <div class="ts-metric-label">Macro-averaged R² (teachers)</div>
+                      <div class="ts-metric-value">≈ 0.77</div>
+                    </div>
+                    <div class="ts-metric">
+                      <div class="ts-metric-label">Role in pipeline</div>
+                      <div class="ts-metric-value">Primary distillation target</div>
+                    </div>
+                  </div>
+                  <div class="ts-details-note">
+                    These teachers encode decades of chemometric intuition in a form the student can imitate.
+                  </div>
+                </div>
+
+                <!-- T5 -->
+                <div class="ts-details-panel" data-node-details="single-modal">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Single-modality Teachers</div>
+                    <div class="ts-details-tagline">Extra guidance for each spectral branch.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Teachers for VNIR, XRF, LIBS</span>
+                    <span class="ts-details-meta-pill">Aligned with all nine targets</span>
+                  </div>
+                  <p class="ts-details-text">
+                    In addition to the main teachers, separate models are trained using only VNIR, only XRF,
+                    or only LIBS. Their predictions act as soft targets for the corresponding student branches,
+                    nudging each modality to learn meaningful, task-aware features.
+                  </p>
+                  <div class="ts-details-note">
+                    This branch-level supervision improves both stability and interpretability of the student.
+                  </div>
+                </div>
+
+                <!-- S1 -->
+                <div class="ts-details-panel" data-node-details="student-pre">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Standardized Student Inputs</div>
+                    <div class="ts-details-tagline">Putting all signals on a common numeric footing.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Per-modality scaling</span>
+                    <span class="ts-details-meta-pill">Shared target statistics</span>
+                  </div>
+                  <p class="ts-details-text">
+                    Before training, each spectral matrix is standardized using statistics computed on the
+                    training set, and all targets and teacher predictions are normalized with shared moments.
+                    This keeps the various loss terms numerically compatible and avoids domination by any
+                    single target.
+                  </p>
+                  <div class="ts-details-note">
+                    Careful normalization is key for stable multi-task, multi-loss optimization.
+                  </div>
+                </div>
+
+                <!-- S2 -->
+                <div class="ts-details-panel" data-node-details="branches">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Spectral Branches</div>
+                    <div class="ts-details-tagline">Dedicated encoders for VNIR, XRF, and LIBS.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Three parallel branches</span>
+                    <span class="ts-details-meta-pill">Compact spectral embeddings</span>
+                  </div>
+                  <p class="ts-details-text">
+                    The student builds separate feature extractors for each modality, turning long,
+                    high-dimensional spectra into 256-dimensional embeddings. Each branch is tuned to
+                    its sensor’s resolution and noise profile while keeping a comparable representation size.
+                  </p>
+                  <div class="ts-details-note">
+                    These embeddings are the building blocks for all subsequent fusion and prediction.
+                  </div>
+                </div>
+
+                <!-- S3 -->
+                <div class="ts-details-panel" data-node-details="gating-moe">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Cross-modal Fusion</div>
+                    <div class="ts-details-tagline">Task-aware combination of the three modalities.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Gating informed by priors</span>
+                    <span class="ts-details-meta-pill">Mixture-of-experts core</span>
+                  </div>
+                  <p class="ts-details-text">
+                    For each soil property, modality embeddings are fused with learned weights that respect
+                    simple domain priors (for example, which sensor tends to be most informative). A small
+                    mixture-of-experts block then refines these fused features into a task-specific representation.
+                  </p>
+                  <div class="ts-details-note">
+                    This design lets the model emphasize different sensors for different soil attributes.
+                  </div>
+                </div>
+
+                <!-- S4 -->
+                <div class="ts-details-panel" data-node-details="heads">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Prediction Heads</div>
+                    <div class="ts-details-tagline">Outputs that match both ground truth and teachers.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Nine main outputs</span>
+                    <span class="ts-details-meta-pill">Additional per-modality heads</span>
+                  </div>
+                  <p class="ts-details-text">
+                    On top of the fused representation, separate heads produce predictions for each soil
+                    property. Additional lightweight heads on each modality map branch features toward the
+                    single-modality teacher signals, closing the loop for feature-level distillation.
+                  </p>
+                  <div class="ts-details-note">
+                    Together these heads encourage the student to be both accurate and decomposable by modality.
+                  </div>
+                </div>
+
+                <!-- S5 -->
+                <div class="ts-details-panel" data-node-details="training">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Training & Distillation</div>
+                    <div class="ts-details-tagline">Blending direct supervision with teacher guidance.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Ground truth loss</span>
+                    <span class="ts-details-meta-pill">Output- and feature-level KD</span>
+                  </div>
+                  <p class="ts-details-text">
+                    The student is trained with a weighted combination of three signals: ground truth
+                    regression, matching the ensemble of teachers at the output level, and matching the
+                    single-modality teachers at the feature level. A conservative optimizer and early
+                    stopping keep the process stable.
+                  </p>
+                  <div class="ts-details-note">
+                    This multi-level formulation lets the student inherit both accuracy and structure
+                    from the full teacher collection.
+                  </div>
+                </div>
+
+                <!-- S6 -->
+                <div class="ts-details-panel" data-node-details="eval">
+                  <div class="ts-details-header">
+                    <div class="ts-details-title">Evaluation & Robustness</div>
+                    <div class="ts-details-tagline">Consistent gains over teachers across random seeds.</div>
+                  </div>
+                  <div class="ts-details-meta">
+                    <span class="ts-details-meta-pill">Multiple random seeds</span>
+                    <span class="ts-details-meta-pill">Macro-level summary</span>
+                  </div>
+                  <p class="ts-details-text">
+                    The full pipeline is repeated for several random seeds, recording per-task metrics each
+                    time. Aggregated statistics show that the unified student reaches a macro coefficient of
+                    determination of roughly 0.81 with modest variance, surpassing the teacher ensemble.
+                  </p>
+                  <div class="ts-details-metrics">
+                    <div class="ts-metric">
+                      <div class="ts-metric-label">Student macro-averaged R²</div>
+                      <div class="ts-metric-value">≈ 0.81 ± 0.03</div>
+                    </div>
+                    <div class="ts-metric">
+                      <div class="ts-metric-label">Student macro-averaged RMSE</div>
+                      <div class="ts-metric-value">≈ 6.45 ± 0.16</div>
+                    </div>
+                  </div>
+                  <div class="ts-details-note">
+                    This confirms that a single multimodal student can replace many separate chemometric models
+                    while remaining robust across runs.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Download -->
+          <article class="project-section" aria-label="Downloads">
+            <div class="section-heading">
+              <div class="section-heading-icon">
+                <i class="fas fa-download" aria-hidden="true"></i>
+              </div>
+              <h3 class="section-heading-title">Download</h3>
+            </div>
+            <div class="download-row">
+              <p class="download-text">
+                Access all supplementary documents and code for this project, including training scripts, ablation
+                configurations, and evaluation notebooks.
+              </p>
+              <a class="btn" href="https://github.com/Shaoqirui/unified-soil-spectroscopy" target="_blank" rel="noopener">
+                <i class="fab fa-github" aria-hidden="true"></i>
+                <span>Download Files</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- Original Dataset & Reference Paper -->
+          <article class="project-section" aria-label="Original dataset and reference paper">
+            <div class="section-heading">
+              <div class="section-heading-icon">
+                <i class="fas fa-database" aria-hidden="true"></i>
+              </div>
+              <h3 class="section-heading-title">Original Dataset & Reference Paper</h3>
+            </div>
+            <p>
+              This project is built on a public tropical soil spectroscopy dataset and its companion paper. The data and reference are:
+            </p>
+            <ul>
+              <li>
+                <strong>Reference paper:</strong><br />
+                Tiago Rodrigues Tavares, José Paulo Molin, Lidiane Cristina Nunes, Elton Eduardo Novais Alves,
+                Francisco José Krug, Hudson Wallace Pereira de Carvalho. <em>Data in Brief</em>, 2022, Volume 41, Article 108004.
+                DOI: <a href="https://doi.org/10.1016/j.dib.2022.108004" target="_blank" rel="noopener">10.1016/j.dib.2022.108004</a>
+              </li>
+              <li>
+                <strong>Original dataset (Mendeley Data):</strong><br />
+                <a href="https://data.mendeley.com/datasets/88c5kvmgbf/1" target="_blank" rel="noopener">
+                  Spectral data of tropical soils using dry-chemistry techniques (VNIR, XRF, and LIBS): A dataset for soil fertility prediction
+                </a>
+              </li>
+            </ul>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <footer>
+      <span>© <span aria-label="site name">owlspace</span></span>
+      <span>just an owl · nothing else</span>
+    </footer>
+  </div>
+
+  <!-- Floating mini owlspace badge (non-overlapping) -->
+  <div class="mini-owl-badge" aria-label="owlspace badge">
+    <a href="/" class="site-logo">
+      <span class="owl-o"><canvas id="owl3d-mini"></canvas></span>
+      <span class="site-logo-text">owlspace</span>
+    </a>
+  </div>
+
+  <!-- three.js for 3D owl -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
+  <script>
+    // ---- Distillation hero canvas animation ----
+    (function() {
+      const canvas = document.getElementById('distillation-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let width, height;
+      const particles = [];
+      const particleCount = 150;
+
+      function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        width = canvas.width = rect.width;
+        height = canvas.height = rect.height;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.reset();
+          this.x = Math.random() * width;
+        }
+        reset() {
+          this.x = 0;
+          this.baseY = height / 2;
+          this.noise = (Math.random() - 0.5) * 200;
+          this.speed = 2 + Math.random() * 2;
+          this.size = 2 + Math.random() * 2;
+          this.color = `rgba(255, 100, 100, ${0.5 + Math.random()*0.5})`;
+          this.distilled = false;
+        }
+        update() {
+          this.x += this.speed;
+          const groundTruthY = this.baseY + Math.sin(this.x * 0.01) * 50;
+          const distillBoundary = width * 0.4;
+
+          if (this.x > distillBoundary) {
+            this.noise *= 0.92;
+            this.distilled = true;
+            this.color = `rgba(56, 189, 248, ${0.6 + Math.random()*0.4})`;
+          }
+
+          this.y = groundTruthY + this.noise;
+
+          if (this.x > width) this.reset();
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+
+      function animate() {
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.2)';
+        ctx.fillRect(0, 0, width, height);
+
+        const boundaryX = width * 0.4;
+
+        const gradient = ctx.createLinearGradient(boundaryX, 0, boundaryX + 50, 0);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        gradient.addColorStop(0.5, 'rgba(96, 165, 250, 0.3)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(boundaryX - 25, 0, 50, height);
+
+        ctx.beginPath();
+        ctx.moveTo(boundaryX, 0);
+        ctx.lineTo(boundaryX, height);
+        ctx.strokeStyle = 'rgba(96, 165, 250, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = 'rgba(255, 100, 100, 0.8)';
+        ctx.font = '12px system-ui, sans-serif';
+        ctx.fillText("High variance (noisy)", boundaryX - 140, height - 20);
+
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+        ctx.fillText("Distilled (aligned)", boundaryX + 20, height - 20);
+
+        ctx.beginPath();
+        for(let x=0; x<width; x+=5) {
+          const y = height / 2 + Math.sin(x * 0.01) * 50;
+          if(x===0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+
+    // ---- 3D Owl Head (three.js, warm cute owl) ----
+    function initOwl(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || !window.THREE) return;
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+      });
+      const pixelRatio = window.devicePixelRatio || 1;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+
+      function resizeRenderer() {
+        const width = canvas.clientWidth * pixelRatio;
+        const height = canvas.clientHeight * pixelRatio;
+        if (width > 0 && height > 0 && (canvas.width !== width || canvas.height !== height)) {
+          renderer.setSize(width, height, false);
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+        }
+      }
+      resizeRenderer();
+      window.addEventListener('resize', resizeRenderer);
+      const cameraBaseDistance = 5.2;
+      const cameraTarget = new THREE.Vector3(0, 0.2, 0);
+      let currentCamPitch = 0;
+      let targetCamPitch = 0;
+
+      camera.position.set(0, 0.1, cameraBaseDistance);
+      camera.lookAt(cameraTarget);
+
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+      keyLight.position.set(2.5, 3.5, 4.5);
+      scene.add(keyLight);
+      const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+      fillLight.position.set(-3, 2, 2);
+      scene.add(fillLight);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+      const baseGeo = new THREE.SphereGeometry(1, 40, 40);
+      const scaleX = 0.9;
+      const scaleY = 1.1;
+      const scaleZ = 0.8;
+
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0x8a6a3f,
+        roughness: 0.7,
+        metalness: 0.0,
+      });
+      const bodyGeo = new THREE.CylinderGeometry(0.8, 0.9, 1.4, 32);
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = -0.25;
+      const owlGroup = new THREE.Group();
+      owlGroup.add(body);
+      scene.add(owlGroup);
+
+      const headMat = new THREE.MeshStandardMaterial({
+        color: 0x8a6a3f,
+        roughness: 0.55,
+        metalness: 0.0,
+      });
+      const headShell = new THREE.Mesh(baseGeo, headMat);
+      headShell.scale.set(scaleX * 0.98, scaleY * 0.85, scaleZ * 0.96);
+      headShell.position.y = 0.32;
+
+      const eyeWhiteMat = new THREE.MeshStandardMaterial({
+        color: 0xf3e4c2,
+        roughness: 0.35,
+        metalness: 0.0,
+      });
+      const irisMat = new THREE.MeshStandardMaterial({
+        color: 0xc9862e,
+        roughness: 0.4,
+        metalness: 0.0,
+      });
+      const irisRingMat = new THREE.MeshStandardMaterial({
+        color: 0x5a3c24,
+        roughness: 0.45,
+        metalness: 0.0,
+      });
+      const pupilMat = new THREE.MeshStandardMaterial({
+        color: 0x000000,
+        roughness: 0.25,
+        metalness: 0.0,
+      });
+      const highlightMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.1,
+        metalness: 0.0,
+      });
+
+      const eyeRadius = 0.40;
+      const irisRadius = 0.30;
+      const pupilRadius = 0.14;
+      const highlightRadius = 0.035;
+
+      const eyeGeo = new THREE.SphereGeometry(eyeRadius, 32, 32);
+      const irisGeo = new THREE.SphereGeometry(irisRadius, 32, 32);
+      const pupilGeo = new THREE.SphereGeometry(pupilRadius, 32, 32);
+      const highlightGeo = new THREE.SphereGeometry(highlightRadius, 16, 16);
+
+      function makeEye(side = 1) {
+        const group = new THREE.Group();
+        const baseX = 0.32 * side;
+        const baseY = 0.55;
+
+        const white = new THREE.Mesh(eyeGeo, eyeWhiteMat);
+        white.scale.set(1, 1, 0.26);
+        white.position.set(baseX, baseY, 0.75);
+        group.add(white);
+
+        const ring = new THREE.Mesh(irisGeo, irisRingMat);
+        ring.scale.set(0.92, 0.92, 0.24);
+        ring.position.set(baseX, baseY, 0.80);
+        group.add(ring);
+
+        const iris = new THREE.Mesh(irisGeo, irisMat);
+        iris.scale.set(0.72, 0.72, 0.22);
+        iris.position.set(baseX, baseY, 0.84);
+        group.add(iris);
+
+        const pupil = new THREE.Mesh(pupilGeo, pupilMat);
+        pupil.scale.set(0.7, 0.7, 0.20);
+        pupil.position.set(baseX, baseY + 0.015, 0.89);
+        group.add(pupil);
+
+        const hl = new THREE.Mesh(highlightGeo, highlightMat);
+        hl.position.set(baseX - 0.035 * side, baseY + 0.06, 0.93);
+        group.add(hl);
+
+        return group;
+      }
+
+      const leftEye = makeEye(-1);
+      const rightEye = makeEye(1);
+
+      const beakGeo = new THREE.ConeGeometry(0.10, 0.20, 32);
+      const beakMat = new THREE.MeshStandardMaterial({
+        color: 0x000000,
+        roughness: 0.6,
+        metalness: 0.0,
+      });
+      const beak = new THREE.Mesh(beakGeo, beakMat);
+      beak.scale.set(1.0, 0.9, 0.12);
+      beak.rotation.set(0, 0, 0);
+      beak.position.set(0, 0.20, 0.81);
+
+      const earGeo = new THREE.ConeGeometry(0.18, 0.4, 12);
+      const earMat = headMat.clone();
+      const leftEar = new THREE.Mesh(earGeo, earMat);
+      leftEar.position.set(-0.38, 0.88, 0.18);
+      leftEar.rotation.set(0.1, 0.1, Math.PI * 0.2);
+
+      const rightEar = leftEar.clone();
+      rightEar.position.x *= -1;
+      rightEar.rotation.y *= -1;
+      rightEar.rotation.z = -Math.PI * 0.2;
+
+      const wingGeo = new THREE.SphereGeometry(0.7, 32, 32);
+      const wingMat = new THREE.MeshStandardMaterial({
+        color: 0x2d2a24,
+        roughness: 0.7,
+        metalness: 0.0,
+      });
+      const leftWing = new THREE.Mesh(wingGeo, wingMat);
+      leftWing.scale.set(0.22, 0.7, 0.18);
+      leftWing.position.set(-0.78, 0.02, 0.08);
+      leftWing.rotation.z = -Math.PI * 0.18;
+
+      const rightWing = leftWing.clone();
+      rightWing.position.x *= -1;
+      rightWing.rotation.z = Math.PI * 0.18;
+
+      body.add(leftWing, rightWing);
+
+      const chestGeo = new THREE.SphereGeometry(0.75, 32, 32);
+      const chestMat = new THREE.MeshStandardMaterial({
+        color: 0xd9cbb4,
+        roughness: 0.45,
+        metalness: 0.0,
+      });
+      const chest = new THREE.Mesh(chestGeo, chestMat);
+      chest.scale.set(0.80, 0.80, 0.45);
+      chest.position.set(0, -0.12, 0.45);
+      body.add(chest);
+
+      const toeGeo = new THREE.BoxGeometry(0.09, 0.06, 0.28);
+      const footMat = new THREE.MeshStandardMaterial({
+        color: 0xc4922f,
+        roughness: 0.6,
+        metalness: 0.0,
+      });
+      function makeFoot(side = 1) {
+        const g = new THREE.Group();
+        for (let i = 0; i < 3; i++) {
+          const toe = new THREE.Mesh(toeGeo, footMat);
+          toe.position.set(-0.12 + 0.12 * i, -0.86, 0.48);
+          g.add(toe);
+        }
+        g.position.x = 0.3 * side;
+        g.position.z = 0.32;
+        return g;
+      }
+      const leftFoot = makeFoot(-1);
+      const rightFoot = makeFoot(1);
+      owlGroup.add(leftFoot, rightFoot);
+
+      const branchGeo = new THREE.CylinderGeometry(0.12, 0.12, 2.3, 20);
+      const branchMat = new THREE.MeshStandardMaterial({
+        color: 0x5b4630,
+        roughness: 0.9,
+        metalness: 0.0,
+      });
+      const branch = new THREE.Mesh(branchGeo, branchMat);
+      branch.rotation.z = Math.PI / 2;
+      branch.position.set(0, -0.96, 0.32);
+      owlGroup.add(branch);
+
+      const headGroup = new THREE.Group();
+      headGroup.add(headShell, leftEye, rightEye, beak, leftEar, rightEar);
+      headGroup.position.set(0, 0.10, 0);
+      owlGroup.add(headGroup);
+
+      let targetYaw = 0;
+      const maxYaw = Math.PI / 3;
+      const maxCamPitch = 0.28;
+
+      let resetTimer = null;
+      function scheduleReset() {
+        if (resetTimer) return;
+        resetTimer = setTimeout(() => {
+          targetYaw = 0;
+          targetCamPitch = 0;
+          resetTimer = null;
+        }, 500);
+      }
+
+      function onMove(e) {
+        if (resetTimer) {
+          clearTimeout(resetTimer);
+          resetTimer = null;
+        }
+
+        const rect = canvas.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+
+        const nx = Math.max(-1, Math.min(1, dx / (rect.width / 2)));
+        const ny = Math.max(-1, Math.min(1, dy / (rect.height / 2)));
+
+        targetYaw = nx * maxYaw;
+        targetCamPitch = ny * maxCamPitch;
+      }
+
+      window.addEventListener("pointermove", onMove, { passive: true });
+
+      document.addEventListener("mouseout", (e) => {
+        if (!e.relatedTarget && !e.toElement) {
+          scheduleReset();
+        }
+      });
+
+      window.addEventListener("blur", scheduleReset);
+
+      function animate() {
+        requestAnimationFrame(animate);
+        resizeRenderer();
+
+        headGroup.rotation.x = 0;
+        headGroup.rotation.z = 0;
+        headGroup.rotation.y += (targetYaw - headGroup.rotation.y) * 0.18;
+
+        currentCamPitch += (targetCamPitch - currentCamPitch) * 0.15;
+        owlGroup.rotation.x = currentCamPitch;
+
+        camera.position.set(0, 0.1, cameraBaseDistance);
+        camera.lookAt(cameraTarget);
+
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+    initOwl("owl3d");
+    initOwl("owl3d-mini");
+
+    // ---- Scroll-in animation for project sections ----
+    (function(){
+      const sections = document.querySelectorAll('.project-section');
+      if (!sections.length) return;
+
+      if (!('IntersectionObserver' in window)) {
+        sections.forEach(s => s.classList.add('is-visible'));
+        return;
+      }
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      sections.forEach(s => io.observe(s));
+    })();
+
+    // ---- Interactive Teacher–Student pipeline (node ↔ details sync) ----
+    (function () {
+      const nodes = document.querySelectorAll('.ts-flow-node');
+      const panels = document.querySelectorAll('.ts-details-panel');
+      if (!nodes.length || !panels.length) return;
+
+      function activate(name) {
+        nodes.forEach(n => {
+          n.classList.toggle('active', n.getAttribute('data-node') === name);
+        });
+        panels.forEach(p => {
+          p.classList.toggle('active', p.getAttribute('data-node-details') === name);
+        });
+      }
+
+      nodes.forEach(node => {
+        const name = node.getAttribute('data-node');
+        node.addEventListener('click', () => activate(name));
+        node.addEventListener('mouseenter', () => activate(name));
+      });
+    })();
+  </script>
+</body>
+</html>
